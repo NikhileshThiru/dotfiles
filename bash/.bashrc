@@ -18,3 +18,14 @@ if [[ $- == *i* && -z $TMUX ]]; then
 fi
 export PATH="$HOME/.cargo/bin:$PATH"
 alias matrix='unimatrix -s 96 -c cyan'
+
+# Yazi wrapper: `y` opens yazi and cd's to its last directory on quit (q).
+# Q quits without changing directory.
+function y() {
+	local tmp cwd
+	tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+	command yazi "$@" --cwd-file="$tmp"
+	IFS= read -r -d '' cwd < "$tmp"
+	[ "$cwd" != "$PWD" ] && [ -d "$cwd" ] && builtin cd -- "$cwd" || builtin true
+	command rm -f -- "$tmp"
+}

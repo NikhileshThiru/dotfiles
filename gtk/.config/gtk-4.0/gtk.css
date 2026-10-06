@@ -1,0 +1,55 @@
+/* GTK4 and libadwaita: dark theme with cyan #00c8ff accent and #7aa2f7
+ * secondary. libadwaita apps ignore the GTK theme setting but always load this
+ * file; plain GTK4 apps use adw-gtk3-dark, which reads the same variables. */
+
+:root {
+  --accent-color: #00c8ff;
+  --accent-bg-color: #00c8ff;
+  --accent-fg-color: #06070a;
+
+  --destructive-color: #f7768e;
+  --destructive-bg-color: #c0394f;
+  --destructive-fg-color: #ffffff;
+  --success-color: #5dd9d6;
+  --success-bg-color: #1f8a87;
+  --success-fg-color: #ffffff;
+  --warning-color: #e0af68;
+  --warning-bg-color: #b8862e;
+  --warning-fg-color: rgb(0 0 0 / 80%);
+  --error-color: #f7768e;
+  --error-bg-color: #c0394f;
+  --error-fg-color: #ffffff;
+
+  --window-bg-color: #0b0d12;
+  --window-fg-color: #d5e6ee;
+  --view-bg-color: #06070a;
+  --view-fg-color: #d5e6ee;
+  --headerbar-bg-color: #10131a;
+  --headerbar-fg-color: #d5e6ee;
+  --headerbar-border-color: #7aa2f7;
+  --headerbar-backdrop-color: #0b0d12;
+  --headerbar-shade-color: rgb(0 0 0 / 36%);
+  --sidebar-bg-color: #0d1016;
+  --sidebar-fg-color: #d5e6ee;
+  --sidebar-backdrop-color: #0b0d12;
+  --sidebar-border-color: rgb(122 162 247 / 15%);
+  --sidebar-shade-color: rgb(0 0 0 / 36%);
+  --secondary-sidebar-bg-color: #0b0d12;
+  --secondary-sidebar-fg-color: #d5e6ee;
+  --card-bg-color: rgb(122 162 247 / 6%);
+  --card-fg-color: #d5e6ee;
+  --card-shade-color: rgb(0 0 0 / 36%);
+  --dialog-bg-color: #11141b;
+  --dialog-fg-color: #d5e6ee;
+  --popover-bg-color: #11141b;
+  --popover-fg-color: #d5e6ee;
+  --popover-shade-color: rgb(0 0 0 / 36%);
+  --shade-color: rgb(0 0 0 / 36%);
+  --scrollbar-outline-color: rgb(0 0 0 / 50%);
+}
+
+/* Links in the secondary blue. */
+link,
+link:visited {
+  color: #7aa2f7;
+}

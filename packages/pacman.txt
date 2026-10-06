@@ -1,3 +1,5 @@
+7zip
+adw-gtk-theme
 aether
 alsa-utils
 asdcontrol
@@ -150,6 +152,7 @@ xdg-desktop-portal-hyprland
 xdg-terminal-exec
 yaru-icon-theme
 yay
+yazi
 yt-dlp
 zbar
 zen-browser-bin

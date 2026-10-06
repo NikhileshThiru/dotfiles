@@ -3,6 +3,10 @@ background = 161616
 background-opacity = 1.0
 unfocused-split-opacity = 1.0
 
+# No "close this terminal?" or "this paste looks unsafe" popups.
+confirm-close-surface = false
+clipboard-paste-protection = false
+
 # Per-OS settings live in macos.conf and linux.conf. install.sh only links the
 # one for the current OS, and the leading ? keeps Ghostty quiet about the other.
 config-file = ?macos.conf

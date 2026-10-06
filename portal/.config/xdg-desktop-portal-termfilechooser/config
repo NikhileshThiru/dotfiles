@@ -1,0 +1,11 @@
+; File open/save dialogs as yazi in Ghostty.
+; Options: man 5 xdg-desktop-portal-termfilechooser
+[filechooser]
+cmd=yazi-wrapper.sh
+default_dir=$HOME
+; The wrapper appends "yazi <args>" to TERMCMD. The class lets Hyprland float
+; the window (hypr/dialogs.lua); passing flags gives each dialog its own Ghostty
+; process, so the portal waits until yazi exits.
+env=TERMCMD=ghostty --class=yazi.filechooser --title=termfilechooser -e
+open_mode=suggested
+save_mode=last

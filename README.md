@@ -34,6 +34,10 @@ Each Stow package is laid out the way its files sit under `$HOME`.
 | `spicetify/` | `~/.config/spicetify/` | Spicetify config and the Marketplace app/theme |
 | `bash/` | `~/.bashrc` | Omarchy's bash defaults, my aliases, and the fastfetch intro |
 | `bin/` | `~/.local/bin/` | `jarvis`, which tiles Spotify, btop and cava on an empty workspace |
+| `yazi/` | `~/.config/yazi/` | Yazi file manager theme (cyan `#00c8ff`, blue `#7aa2f7`). Linked on macOS too |
+| `gtk/` | `~/.config/gtk-3.0/gtk.css`, `~/.config/gtk-4.0/gtk.css` | GTK3/GTK4/libadwaita colors on top of `adw-gtk3-dark` |
+| `omarchy/` | `~/.config/omarchy/shell.toml` | Omarchy shell overrides (polkit password prompt colors) |
+| `portal/` | `~/.config/xdg-desktop-portal/`, `~/.config/xdg-desktop-portal-termfilechooser/` | File open/save dialogs as yazi in Ghostty (AUR: `xdg-desktop-portal-termfilechooser`) |
 
 These two aren't Stow packages. Don't `stow` them:
 
@@ -98,24 +102,26 @@ What's in `system/`:
 ### macOS
 
 ```sh
-brew install git stow neovim tmux ripgrep fzf tree-sitter-cli
+brew install git stow neovim tmux ripgrep fzf tree-sitter-cli yazi
 brew install --cask ghostty
 git clone https://github.com/NikhileshThiru/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ./install.sh
 ```
 
-On macOS, `install.sh` only links nvim, tmux and Ghostty, and skips `linux.conf`. Neovim
+On macOS, `install.sh` only links nvim, tmux, yazi and Ghostty, and skips `linux.conf`. Neovim
 0.12+ and tree-sitter CLI 0.26.1+ are required.
 
 To link by hand instead of using `install.sh`:
 
 ```sh
-stow nvim tmux
+stow nvim tmux yazi
 stow --no-folding --ignore='linux\.conf' ghostty   # macOS
 stow --no-folding --ignore='macos\.conf' ghostty   # Linux
 stow hypr fastfetch btop cava starship voxtype spicetify bash   # Linux
 stow --no-folding bin                                           # Linux
+stow --no-folding gtk omarchy portal                            # Linux
+gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark   # Linux
 ```
 
 ## Day to day

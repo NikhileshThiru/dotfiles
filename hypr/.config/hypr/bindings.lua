@@ -34,6 +34,12 @@ hl.unbind("SUPER + F")
 o.bind("SUPER + F", "Maximize", hl.dsp.window.fullscreen({ mode = "maximized" }))
 
 -- True fullscreen moves to Super+Shift+F. Super+Shift+F was "File manager"
--- (still on Super+Alt+Shift+F for the current directory).
+-- (now yazi on Super+Alt+Shift+F, below).
 hl.unbind("SUPER + SHIFT + F")
 o.bind("SUPER + SHIFT + F", "Full screen", hl.dsp.window.fullscreen({ mode = "fullscreen" }))
+
+-- File manager: yazi in Ghostty instead of Nautilus (Nautilus stays installed).
+-- Super+Alt+Shift+F was "File manager (cwd)" in Nautilus; it still opens in the
+-- focused terminal's directory (or ~ when the focused window isn't a terminal).
+hl.unbind("SUPER + ALT + SHIFT + F")
+o.bind("SUPER + ALT + SHIFT + F", "File manager (cwd)", { launch = 'ghostty -e yazi "$(omarchy-cmd-terminal-cwd)"' })

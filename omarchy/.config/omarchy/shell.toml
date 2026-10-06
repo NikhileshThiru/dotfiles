@@ -1,0 +1,11 @@
+# Machine-level overrides for the Omarchy shell, layered over the current
+# theme's shell.toml (these keys win, and survive `omarchy theme set`).
+# Format and every key: /usr/share/omarchy/default/themed/shell.toml.tpl
+
+[polkit]
+# Password prompt for privileged actions: cyan #00c8ff accent, cyan-to-blue
+# border. The theme's "red" is a blue, so errors get a real red.
+accent       = "#00c8ff"
+border       = "rgba(00c8ffee) rgba(7aa2f7ee) 45deg"
+text-error   = "#f7768e"
+border-error = "#f7768e"

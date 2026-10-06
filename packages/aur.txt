@@ -1,2 +1,3 @@
 spicetify-cli
 unimatrix-git
+xdg-desktop-portal-termfilechooser
