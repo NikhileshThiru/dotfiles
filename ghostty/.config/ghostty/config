@@ -1,0 +1,8 @@
+mouse-hide-while-typing = true
+background = 161616
+background-opacity = 1.0
+unfocused-split-opacity = 1.0
+
+# macOS-only settings live in macos.conf. The leading ? makes it optional, so
+# Ghostty stays quiet on Linux, where install.sh doesn't link it.
+config-file = ?macos.conf
