@@ -3,6 +3,7 @@ background = 161616
 background-opacity = 1.0
 unfocused-split-opacity = 1.0
 
-# macOS-only settings live in macos.conf. The leading ? makes it optional, so
-# Ghostty stays quiet on Linux, where install.sh doesn't link it.
+# Per-OS settings live in macos.conf and linux.conf. install.sh only links the
+# one for the current OS, and the leading ? keeps Ghostty quiet about the other.
 config-file = ?macos.conf
+config-file = ?linux.conf

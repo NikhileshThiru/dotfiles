@@ -468,14 +468,103 @@ packadd("LuaSnip")
 -- ============================================================================
 -- COLORSCHEME + UI LINKS
 -- ============================================================================
-vim.schedule(function()
-	pcall(vim.cmd.colorscheme, "carbonfox")
+-- On Omarchy, follow the system theme: Omarchy writes the current theme's
+-- lazy.nvim spec to neovim.lua. Clone the plugins it names into their own pack
+-- dir (not vim.pack, so theme switches don't touch the shared lockfile), run
+-- their setup() with its opts, and apply its colorscheme. Without Omarchy
+-- (macOS), carbonfox.
+local omarchy_state = vim.fn.expand("~/.local/state/omarchy/current")
+local omarchy_pack = vim.fn.stdpath("data") .. "/site/pack/omarchy-themes/opt/"
+
+local function load_omarchy_plugin(spec, reload)
+	if type(spec) == "string" then
+		spec = { spec }
+	end
+	for _, dep in ipairs(spec.dependencies or {}) do
+		load_omarchy_plugin(dep, reload)
+	end
+
+	local name = spec.name or spec[1]:match("[^/]+$")
+	local dir = omarchy_pack .. name
+	if not vim.uv.fs_stat(dir) then
+		local cmd = { "git", "clone", "--quiet", "--depth=1" }
+		if spec.branch or spec.tag then
+			vim.list_extend(cmd, { "--branch", spec.branch or spec.tag })
+		end
+		vim.list_extend(cmd, { "https://github.com/" .. spec[1], dir })
+		vim.fn.system(cmd)
+		if vim.v.shell_error ~= 0 then
+			vim.fn.delete(dir, "rf")
+			return
+		end
+	end
+
+	-- On a theme switch, drop the plugin's cached modules so setup() takes the new opts.
+	if reload and vim.uv.fs_stat(dir .. "/lua") then
+		for path, kind in vim.fs.dir(dir .. "/lua", { depth = 10 }) do
+			if kind == "file" and path:match("%.lua$") then
+				package.loaded[path:gsub("%.lua$", ""):gsub("/init$", ""):gsub("/", ".")] = nil
+			end
+		end
+	end
+
+	vim.cmd.packadd(name)
+	if type(spec.opts) == "table" then
+		local main = spec.main or name:gsub("^n?vim%-", ""):gsub("[%.%-]n?vim$", ""):gsub("%-neovim$", "")
+		local ok, mod = pcall(require, main)
+		if ok and type(mod) == "table" and type(mod.setup) == "function" then
+			mod.setup(spec.opts)
+		end
+	end
+end
+
+local function omarchy_colorscheme(reload)
+	local ok, specs = pcall(dofile, omarchy_state .. "/theme/neovim.lua")
+	if not ok or type(specs) ~= "table" then
+		return nil
+	end
+	local colorscheme
+	for _, spec in ipairs(specs) do
+		if spec[1] == "LazyVim/LazyVim" then
+			colorscheme = spec.opts and spec.opts.colorscheme
+		else
+			load_omarchy_plugin(spec, reload)
+		end
+	end
+	return colorscheme
+end
+
+local function apply_colorscheme(reload)
+	if reload then
+		vim.o.background = "dark" -- light themes switch it back themselves
+	end
+	local name = omarchy_colorscheme(reload)
+	if not (name and pcall(vim.cmd.colorscheme, name)) then
+		pcall(vim.cmd.colorscheme, "carbonfox")
+	end
 
 	vim.api.nvim_set_hl(0, "NvimTreeNormal", { link = "NormalNC" })
 	vim.api.nvim_set_hl(0, "NvimTreeNormalNC", { link = "NormalNC" })
 	vim.api.nvim_set_hl(0, "NvimTreeEndOfBuffer", { link = "NormalNC" })
 	vim.api.nvim_set_hl(0, "NvimTreeWinSeparator", { link = "WinSeparator" })
-end)
+end
+
+vim.schedule(apply_colorscheme)
+
+-- Re-apply when `omarchy theme set` swaps the theme (it writes theme.name last).
+if vim.uv.fs_stat(omarchy_state) then
+	local pending = false
+	vim.uv.new_fs_event():start(omarchy_state, {}, function(err, filename)
+		if err or filename ~= "theme.name" or pending then
+			return
+		end
+		pending = true
+		vim.defer_fn(function()
+			pending = false
+			apply_colorscheme(true)
+		end, 100)
+	end)
+end
 
 -- ============================================================================
 -- TREESITTER

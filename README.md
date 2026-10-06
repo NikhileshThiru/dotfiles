@@ -1,78 +1,153 @@
 # dotfiles
 
-Neovim, tmux and Ghostty configs, managed with [GNU Stow](https://www.gnu.org/software/stow/).
+My desktop setup, managed with [GNU Stow](https://www.gnu.org/software/stow/). This repo is
+shared between my Omarchy laptop and my Mac: nvim, tmux and Ghostty are linked on both, and
+everything else is Linux-only.
 
-Each top-level folder is a Stow package laid out the way its files sit under `$HOME`:
+<!-- TODO: screenshot -->
+![Screenshot](screenshot.png)
 
-```
-nvim/.config/nvim/        ->  ~/.config/nvim/
-tmux/.tmux.conf           ->  ~/.tmux.conf
-ghostty/.config/ghostty/  ->  ~/.config/ghostty/
-```
+## The setup
 
-## Setting up a new machine
+- **OS:** [Arch Linux](https://archlinux.org/) with [Omarchy](https://omarchy.org/)
+- **Window manager:** [Hyprland](https://hypr.land/) (Lua config, on top of Omarchy's defaults)
+- **Terminal:** [Ghostty](https://ghostty.org/), colors from the current Omarchy theme, 85% opacity
+- **Editor:** [Neovim](https://neovim.io/) 0.12 with the built-in `vim.pack`, colorscheme follows the Omarchy theme (carbonfox on macOS)
+- **Multiplexer:** [tmux](https://github.com/tmux/tmux), layered over Omarchy's tmux keybinds on Linux
+- **Music:** Spotify themed with [Spicetify](https://spicetify.app/) and its Marketplace
+- **Also:** fastfetch, btop, cava, starship, voxtype, and `jarvis`, a Spotify + btop + cava dashboard
 
-### 1. Install the tools
+## What's in each folder
 
-**macOS**
+Each Stow package is laid out the way its files sit under `$HOME`.
+
+| Folder | Links to | What it holds |
+| --- | --- | --- |
+| `nvim/` | `~/.config/nvim/` | Neovim config (`init.lua`) and the `vim.pack` lockfile |
+| `tmux/` | `~/.tmux.conf` | tmux config; sources Omarchy's tmux config when Omarchy is installed |
+| `ghostty/` | `~/.config/ghostty/` | Shared `config`, plus `macos.conf` and `linux.conf` (Omarchy theme, opacity) |
+| `hypr/` | `~/.config/hypr/` | Hyprland overrides: monitors, input, bindings, look and feel, hybrid-GPU env |
+| `fastfetch/` | `~/.config/fastfetch/` | fastfetch layout used by the shell intro |
+| `btop/` | `~/.config/btop/` | `btop.conf`, plus `jarvis.conf` used by the dashboard |
+| `cava/` | `~/.config/cava/` | cava config, shaders and color themes |
+| `starship/` | `~/.config/starship.toml` | Prompt |
+| `voxtype/` | `~/.config/voxtype/` | Voice-to-text settings (local Whisper) |
+| `spicetify/` | `~/.config/spicetify/` | Spicetify config and the Marketplace app/theme |
+| `bash/` | `~/.bashrc` | Omarchy's bash defaults, my aliases, and the fastfetch intro |
+| `bin/` | `~/.local/bin/` | `jarvis`, which tiles Spotify, btop and cava on an empty workspace |
+
+These two aren't Stow packages. Don't `stow` them:
+
+| Folder | What it holds |
+| --- | --- |
+| `system/` | Copies of root-owned files (keyboard backlight color, resume hook, GPU module setup), mirrored by path, plus `install.sh` to put them back with sudo |
+| `packages/` | `pacman.txt` (official and Omarchy repo packages), `aur.txt` (AUR), plus `install.sh` |
+
+What's in `system/`:
+
+- `etc/udev/rules.d/91-kbd-color.rules`: sets the RGB keyboard backlight color at boot
+- `usr/lib/systemd/system-sleep/kbd.sh`: restores the backlight brightness and color after resume
+- `etc/modprobe.d/nvidia.conf`: `nvidia_drm modeset=1`
+- `etc/mkinitcpio.conf.d/00-i915-first.conf`: loads i915 before nvidia so the Intel iGPU gets `renderD128`
+
+## Setting up a fresh machine
+
+### Omarchy (Linux)
+
+1. Install Omarchy from <https://omarchy.org/> and boot into it.
+2. Clone the repo:
+
+   ```sh
+   git clone https://github.com/NikhileshThiru/dotfiles.git ~/dotfiles
+   cd ~/dotfiles
+   ```
+
+3. Install the packages. This also installs `stow`.
+
+   ```sh
+   ./packages/install.sh
+   ```
+
+4. Link the configs. Anything already there (for example, Omarchy's defaults) is moved to
+   `<name>.bak.<timestamp>` first.
+
+   ```sh
+   ./install.sh
+   ```
+
+5. Put the system files back, then reboot. This rebuilds the initramfs for the GPU changes.
+
+   ```sh
+   ./system/install.sh
+   ```
+
+6. Spicetify: open Spotify once and log in, then:
+
+   ```sh
+   sudo chmod a+wr /opt/spotify
+   sudo chmod -R a+wr /opt/spotify/Apps
+   spicetify backup apply
+   ```
+
+   If it complains about the backup version (the `[Backup]` section of `config-xpui.ini` came
+   from the old machine), run `spicetify restore backup apply`.
+
+7. Open `nvim`. Plugins install at the revisions pinned in `nvim-pack-lock.json`, Treesitter
+   parsers build, and the current Omarchy theme's colorscheme is cloned on first start. Install
+   language servers and formatters from `:Mason`.
+
+### macOS
 
 ```sh
 brew install git stow neovim tmux ripgrep fzf tree-sitter-cli
 brew install --cask ghostty
-```
-
-**Linux (Debian/Ubuntu shown; use dnf/pacman equivalents elsewhere)**
-
-```sh
-sudo apt install git stow tmux ripgrep fzf curl tar build-essential
-# Clipboard support for nvim: pick one
-sudo apt install wl-clipboard   # Wayland
-sudo apt install xclip          # X11
-```
-
-- **Neovim 0.12+** is required (the config uses the built-in `vim.pack`). Distro packages
-  are often older; grab a build from <https://github.com/neovim/neovim/releases>.
-- **tree-sitter CLI 0.26.1+** is needed by nvim-treesitter to build parsers:
-  <https://github.com/tree-sitter/tree-sitter/releases> or `cargo install tree-sitter-cli`.
-- **Ghostty**: <https://ghostty.org/docs/install/binary>
-
-### 2. Clone and link
-
-```sh
 git clone https://github.com/NikhileshThiru/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ./install.sh
 ```
 
-`install.sh` moves any existing nvim/tmux/Ghostty config to `<name>.bak.<timestamp>`, then
-runs `stow`. It's safe to re-run.
+On macOS, `install.sh` only links nvim, tmux and Ghostty, and skips `linux.conf`. Neovim
+0.12+ and tree-sitter CLI 0.26.1+ are required.
 
-To do it by hand instead: `cd ~/dotfiles && stow nvim tmux ghostty`
-(on Linux use `stow --no-folding --ignore='macos\.conf' ghostty` for Ghostty).
+To link by hand instead of using `install.sh`:
 
-### 3. First launch
-
-- Open `nvim`. Plugins install at the revisions pinned in `nvim-pack-lock.json`, and
-  Treesitter parsers build on first start.
-- Language servers and formatters (lua-language-server, pyright, stylua, black, prettierd,
-  etc.) are installed from `:Mason`.
-- Icons need a Nerd Font. Ghostty ships with Nerd Font symbols built in; other terminals
-  need one installed (e.g. `brew install --cask font-jetbrains-mono-nerd-font`).
+```sh
+stow nvim tmux
+stow --no-folding --ignore='linux\.conf' ghostty   # macOS
+stow --no-folding --ignore='macos\.conf' ghostty   # Linux
+stow hypr fastfetch btop cava starship voxtype spicetify bash   # Linux
+stow --no-folding bin                                           # Linux
+```
 
 ## Day to day
 
-- The files under `~/.config/...` are symlinks into this repo, so edit them in place and
-  commit from `~/dotfiles`.
-- Plugin updates (`:lua vim.pack.update()`) rewrite `nvim-pack-lock.json`; commit it so
-  other machines get the same versions. On another machine, `git pull` then `:restart`.
-- Add another config as a new package, e.g. zsh:
-  `mkdir zsh && mv ~/.zshrc zsh/ && stow zsh`
-- Unlink a package: `stow -D <package>`
+- Files under `~/.config/...` are symlinks into this repo, so edit them in place and commit
+  from `~/dotfiles`.
+- Changing the Omarchy theme (`omarchy theme set ...`) re-themes Ghostty, tmux, btop and
+  running nvim sessions. Nothing in the repo changes.
+- Plugin updates (`:lua vim.pack.update()`) rewrite `nvim-pack-lock.json`. Commit it so the
+  other machine gets the same versions.
+- Refresh the package lists after installing or removing packages:
+
+  ```sh
+  pacman -Qqen > packages/pacman.txt
+  pacman -Qqem > packages/aur.txt
+  ```
+
+- If you change a file under `/etc` or `/usr/lib`, copy it into `system/` at the same path.
+- To add another config, create a new package, e.g. `mkdir -p foo/.config && mv ~/.config/foo foo/.config/ && stow foo`
+- To unlink a package: `stow -D <package>`
 
 ## macOS vs Linux
 
-- **Ghostty**: macOS-only settings go in `ghostty/.config/ghostty/macos.conf`, loaded with
-  `config-file = ?macos.conf`. `install.sh` doesn't link it on Linux, and the `?` keeps
-  Ghostty from complaining that it's missing.
-- **tmux**: macOS-only settings go inside the `if-shell 'uname | grep -q Darwin'` block at
-  the end of `.tmux.conf`.
+- **Ghostty:** OS-specific settings go in `macos.conf` or `linux.conf`, loaded with
+  `config-file = ?macos.conf` / `?linux.conf`. `install.sh` only links the one for the
+  current OS, and the `?` keeps Ghostty from complaining about the other.
+- **tmux:** On Omarchy, `.tmux.conf` sources `/usr/share/omarchy/config/tmux/tmux.conf`, so
+  Omarchy's keybinds (`C-Space` prefix, `Alt+Enter` splits, `Alt+1-9` windows) and themed status
+  bar apply. `C-b` still works as a second prefix. My own settings are re-applied on top.
+  macOS-only settings go in the `if-shell 'uname | grep -q Darwin'` block.
+- **Neovim:** If `~/.local/state/omarchy/current/theme/neovim.lua` exists, its theme plugin is
+  cloned into `~/.local/share/nvim/site/pack/omarchy-themes/` and applied. Otherwise the
+  colorscheme is carbonfox. These theme plugins stay out of `vim.pack` so switching themes
+  doesn't change the shared lockfile.

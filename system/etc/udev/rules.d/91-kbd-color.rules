@@ -1,0 +1,1 @@
+ACTION=="add", SUBSYSTEM=="leds", KERNEL=="rgb:kbd_backlight", ATTR{multi_intensity}="0 200 255"

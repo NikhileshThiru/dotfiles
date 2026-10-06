@@ -29,5 +29,15 @@ tmux/.config/tmux/plugins/
 id_rsa*
 id_ed25519*
 
-# Backups made by install.sh
+# Backups made by install.sh, Omarchy (omarchy refresh) and by hand
+*.bak
 *.bak.*
+
+# btop: Omarchy's theme link points into $HOME; install.sh recreates it
+btop/.config/btop/themes/current.theme
+
+# Spicetify: things it or the Marketplace regenerates
+spicetify/.config/spicetify/Backup/
+spicetify/.config/spicetify/Extracted/
+spicetify/.config/spicetify/CustomApps/marketplace-tmp/
+spicetify/.config/spicetify/CustomApps/*.zip

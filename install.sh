@@ -37,12 +37,33 @@ backup .config/ghostty
 
 stow --restow nvim tmux
 
+# Link only this OS's Ghostty file (macos.conf or linux.conf). --no-folding
+# links files one by one; without it stow links the whole directory and the
+# ignore has no effect.
 if [ "$(uname)" = Darwin ]; then
-	stow --restow ghostty
-else
-	# Skip macos.conf on Linux. --no-folding links files one by one; without it
-	# stow links the whole directory and the ignore has no effect.
-	stow --restow --no-folding --ignore='macos\.conf' ghostty
+	stow --restow --no-folding --ignore='linux\.conf' ghostty
+	echo "Linked nvim, tmux and ghostty into $HOME."
+	exit 0
 fi
 
-echo "Linked nvim, tmux and ghostty into $HOME."
+stow --restow --no-folding --ignore='macos\.conf' ghostty
+
+# --- Linux (Omarchy) only ---
+for pkg in hypr fastfetch btop cava voxtype spicetify; do
+	backup ".config/$pkg"
+done
+backup .config/starship.toml
+backup .bashrc
+backup .local/bin/jarvis
+
+stow --restow hypr fastfetch btop cava starship voxtype spicetify bash
+# Keep ~/.local/bin a real directory so other tools don't install into the repo.
+stow --restow --no-folding bin
+
+# btop's theme follows Omarchy through this link. Omarchy creates it at install
+# time and it points into $HOME, so it isn't tracked; recreate it if missing.
+mkdir -p "$HOME/.config/btop/themes"
+[ -e "$HOME/.config/btop/themes/current.theme" ] ||
+	ln -snf "$HOME/.local/state/omarchy/current/theme/btop.theme" "$HOME/.config/btop/themes/current.theme"
+
+echo "Linked nvim, tmux, ghostty and the Linux packages into $HOME."

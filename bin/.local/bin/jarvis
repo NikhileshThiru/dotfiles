@@ -1,0 +1,68 @@
+#!/bin/bash
+# Jarvis dashboard: Spotify on the left half, btop top-right, cava bottom-right.
+#
+# Windows are spawned by Hyprland itself (hl.dsp.exec_cmd), not as children of
+# this shell, so Ghostty's debug logs never reach the launching terminal.
+
+BTOP_CONF="$HOME/.config/btop/jarvis.conf" # separate config so the preset doesn't stick to plain `btop`
+BTOP_PRESET=4                              # cpu + mem, no process list (fits the ~85x18 tile)
+
+dispatch() {
+  hyprctl dispatch "$1" >/dev/null
+}
+
+launch() {
+  dispatch "hl.dsp.exec_cmd([[$1]])"
+}
+
+window_addresses() {
+  hyprctl clients -j | jq -c '[.[].address]'
+}
+
+# Wait up to $2 seconds for a window not in $1 to appear, then give dwindle a beat to tile it.
+wait_for_new_window() {
+  local before=$1 tries=$((${2:-5} * 10))
+  while ((tries-- > 0)); do
+    (($(hyprctl clients -j | jq --argjson old "$before" '[.[].address] - $old | length') > 0)) && break
+    sleep 0.1
+  done
+  sleep 0.3
+}
+
+# Typed in a terminal: hand off to a detached copy and close this terminal so it doesn't take a tile.
+if [[ -t 0 && -z $JARVIS_DETACHED ]]; then
+  terminal=$(hyprctl activewindow -j | jq -r 'select(.class | test("ghostty|alacritty|kitty|foot"; "i")) | .address')
+  JARVIS_DETACHED=1 JARVIS_TERMINAL=$terminal setsid -f "$0" </dev/null >/dev/null 2>&1
+  [[ -n $terminal ]] && dispatch "hl.dsp.window.close({ window = \"address:$terminal\" })"
+  exit 0
+fi
+
+# Let the launching terminal finish closing.
+if [[ -n $JARVIS_TERMINAL ]]; then
+  for _ in {1..20}; do
+    hyprctl clients -j | jq -e --arg a "$JARVIS_TERMINAL" 'any(.address == $a)' >/dev/null || break
+    sleep 0.1
+  done
+fi
+
+# The tiling order only works on an empty workspace.
+(($(hyprctl activeworkspace -j | jq .windows) > 0)) && dispatch 'hl.dsp.focus({ workspace = "empty" })'
+workspace=$(hyprctl activeworkspace -j | jq -r .id)
+
+# Spotify only allows one window, so reuse it if it's already open.
+spotify=$(hyprctl clients -j | jq -r 'first(.[] | select(.class == "Spotify") | .address) // empty')
+if [[ -n $spotify ]]; then
+  dispatch "hl.dsp.window.move({ window = \"address:$spotify\", workspace = \"$workspace\", follow = false })"
+  dispatch "hl.dsp.focus({ window = \"address:$spotify\" })"
+  sleep 0.3
+else
+  before=$(window_addresses)
+  launch "spotify"
+  wait_for_new_window "$before" 15 # Spotify is slow to map its window
+fi
+
+before=$(window_addresses)
+launch "ghostty -e btop -c $BTOP_CONF -p $BTOP_PRESET"
+wait_for_new_window "$before" 5
+
+launch "ghostty --font-size=5 -e cava"
