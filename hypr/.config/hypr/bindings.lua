@@ -43,3 +43,6 @@ o.bind("SUPER + SHIFT + F", "Full screen", hl.dsp.window.fullscreen({ mode = "fu
 -- focused terminal's directory (or ~ when the focused window isn't a terminal).
 hl.unbind("SUPER + ALT + SHIFT + F")
 o.bind("SUPER + ALT + SHIFT + F", "File manager (cwd)", { launch = 'ghostty -e yazi "$(omarchy-cmd-terminal-cwd)"' })
+
+-- GUI file manager (Nautilus) on Super+E.
+o.bind("SUPER + E", "Files", { omarchy = "nautilus" })
