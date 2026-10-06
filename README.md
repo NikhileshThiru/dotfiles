@@ -4,8 +4,7 @@ My desktop setup, managed with [GNU Stow](https://www.gnu.org/software/stow/). T
 shared between my Omarchy laptop and my Mac: nvim, tmux and Ghostty are linked on both, and
 everything else is Linux-only.
 
-<!-- TODO: screenshot -->
-![Screenshot](screenshot.png)
+![jarvis: Spotify, btop and cava on Omarchy](screenshot.png)
 
 ## The setup
 
