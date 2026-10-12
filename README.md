@@ -1,8 +1,8 @@
 # dotfiles
 
 My desktop setup, managed with [GNU Stow](https://www.gnu.org/software/stow/). This repo is
-shared between my Omarchy laptop and my Mac: nvim, tmux and Ghostty are linked on both, and
-everything else is Linux-only.
+shared between my Omarchy laptop and my Mac: nvim, tmux, yazi, Ghostty, the global git ignore
+and the agent rules are linked on both, and everything else is Linux-only.
 
 ![jarvis: Spotify, btop and cava on Omarchy](screenshot.png)
 
@@ -38,11 +38,13 @@ Each Stow package is laid out the way its files sit under `$HOME`.
 | `gtk/` | `~/.config/gtk-3.0/gtk.css`, `~/.config/gtk-4.0/gtk.css` | GTK3/GTK4/libadwaita colors on top of `adw-gtk3-dark` |
 | `omarchy/` | `~/.config/omarchy/shell.toml` | Omarchy shell overrides (polkit password prompt colors) |
 | `portal/` | `~/.config/xdg-desktop-portal/`, `~/.config/xdg-desktop-portal-termfilechooser/` | File open/save dialogs as yazi in Ghostty (AUR: `xdg-desktop-portal-termfilechooser`) |
+| `git/` | `~/.config/git/ignore` | Global git ignore: keeps `CLAUDE.md`, `AGENTS.md` and `.claude/` out of every repo. Linked on macOS too |
 
-These two aren't Stow packages. Don't `stow` them:
+These three aren't Stow packages. Don't `stow` them:
 
 | Folder | What it holds |
 | --- | --- |
+| `agents/` | `rules.md`, the global rules for Claude Code and Codex, and the `/handoff` skill. `install.sh` links `rules.md` to `~/.claude/CLAUDE.md` and `~/.codex/AGENTS.md`, links `handoff/` into `~/.claude/skills/`, and merges the git block (no commit or push, no attribution) into `~/.claude/settings.json`. It isn't a Stow package because the global ignore hides those file names |
 | `system/` | Copies of root-owned files (keyboard backlight color, resume hook, GPU module setup), mirrored by path, plus `install.sh` to put them back with sudo |
 | `packages/` | `pacman.txt` (official and Omarchy repo packages), `aur.txt` (AUR), plus `install.sh` |
 
@@ -109,13 +111,15 @@ cd ~/dotfiles
 ./install.sh
 ```
 
-On macOS, `install.sh` only links nvim, tmux, yazi and Ghostty, and skips `linux.conf`. Neovim
-0.12+ and tree-sitter CLI 0.26.1+ are required.
+On macOS, `install.sh` only links nvim, tmux, yazi, Ghostty, git and the agent rules, and skips
+`linux.conf`. Neovim 0.12+ and tree-sitter CLI 0.26.1+ are required, and `jq` for the Claude Code
+settings.
 
 To link by hand instead of using `install.sh`:
 
 ```sh
 stow nvim tmux yazi
+stow --no-folding git
 stow --no-folding --ignore='linux\.conf' ghostty   # macOS
 stow --no-folding --ignore='macos\.conf' ghostty   # Linux
 stow hypr fastfetch btop cava starship voxtype spicetify bash   # Linux
@@ -140,6 +144,8 @@ gsettings set org.gnome.desktop.interface gtk-theme adw-gtk3-dark   # Linux
   ```
 
 - If you change a file under `/etc` or `/usr/lib`, copy it into `system/` at the same path.
+- Agent rules live in `agents/rules.md`. Edit it, commit, then `git pull` on the other machine;
+  the links pick up the change. Re-run `install.sh` only after adding a new file to `agents/`.
 - To add another config, create a new package, e.g. `mkdir -p foo/.config && mv ~/.config/foo foo/.config/ && stow foo`
 - To unlink a package: `stow -D <package>`
 

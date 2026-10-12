@@ -1,0 +1,5 @@
+# Global git ignore, applied to every repo on this machine.
+# Agent files stay local: they never get committed anywhere.
+CLAUDE.md
+AGENTS.md
+.claude/

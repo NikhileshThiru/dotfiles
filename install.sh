@@ -38,12 +38,48 @@ backup .config/yazi
 
 stow --restow nvim tmux yazi
 
+# Global git ignore (~/.config/git/ignore) that keeps agent files out of every
+# repo. --no-folding keeps ~/.config/git a real directory.
+backup .config/git/ignore
+stow --restow --no-folding git
+if git config --global --get core.excludesFile >/dev/null 2>&1; then
+	echo "Note: core.excludesFile is set, so git skips ~/.config/git/ignore." \
+		"Unset it with: git config --global --unset core.excludesFile" >&2
+fi
+
+# Agent rules: one file that Claude Code reads as CLAUDE.md and Codex reads as
+# AGENTS.md, plus the /handoff skill. Linked here rather than with stow because
+# the global ignore above would hide files with those names in this repo too.
+backup .claude/CLAUDE.md
+backup .codex/AGENTS.md
+backup .claude/skills/handoff
+mkdir -p "$HOME/.claude/skills" "$HOME/.codex"
+ln -snf "$PWD/agents/rules.md" "$HOME/.claude/CLAUDE.md"
+ln -snf "$PWD/agents/rules.md" "$HOME/.codex/AGENTS.md"
+ln -snf "$PWD/agents/handoff" "$HOME/.claude/skills/handoff"
+
+# Claude Code writes to its own settings.json, so it isn't linked. Merge in the
+# shared parts instead: block git commit/push and drop commit/PR attribution.
+settings="$HOME/.claude/settings.json"
+if command -v jq >/dev/null 2>&1; then
+	[ -s "$settings" ] || echo '{}' >"$settings"
+	merged=$(jq '
+		.permissions.deny = ((.permissions.deny // []) + [
+			"Bash(git commit *)", "Bash(git push *)",
+			"Bash(git -C * commit *)", "Bash(git -C * push *)"
+		] | unique)
+		| .attribution = {commit: "", pr: "", sessionUrl: false}' "$settings")
+	printf '%s\n' "$merged" >"$settings"
+else
+	echo "jq not found: skipped the git block and attribution in $settings." >&2
+fi
+
 # Link only this OS's Ghostty file (macos.conf or linux.conf). --no-folding
 # links files one by one; without it stow links the whole directory and the
 # ignore has no effect.
 if [ "$(uname)" = Darwin ]; then
 	stow --restow --no-folding --ignore='linux\.conf' ghostty
-	echo "Linked nvim, tmux, yazi and ghostty into $HOME."
+	echo "Linked nvim, tmux, yazi, git, agent rules and ghostty into $HOME."
 	exit 0
 fi
 
@@ -80,4 +116,4 @@ mkdir -p "$HOME/.config/btop/themes"
 [ -e "$HOME/.config/btop/themes/current.theme" ] ||
 	ln -snf "$HOME/.local/state/omarchy/current/theme/btop.theme" "$HOME/.config/btop/themes/current.theme"
 
-echo "Linked nvim, tmux, yazi, ghostty and the Linux packages into $HOME."
+echo "Linked nvim, tmux, yazi, git, agent rules, ghostty and the Linux packages into $HOME."
